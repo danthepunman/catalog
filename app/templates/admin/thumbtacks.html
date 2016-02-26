@@ -1,0 +1,44 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Thumbtacks</h1>
+                    </div>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Kind</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>User</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {# (j = thumb, k = category.name) #}
+                        {% for j,k in list_thumbtacks %}
+                            <tr>
+                                <td>{{ k.name }}</td>
+                                <td>{{ j.kind }}</td>
+                                <td>{{ j.name }}</td>
+                                <td>{{ j.description }} </td>
+                                <td>{{ j.user }}</td>
+                                <td><a href="{{ url_for('.thumbtack_delete', thumbtack_id=j.id) }}"
+                                       class="btn btn-default" aria-label="delete">
+                                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                </a> </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">Comments</h1>
+                        </div>
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Comment</th>
+                                <th>User</th>
+                                <th>Delete</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {# (j = comment, k = category.name) #}
+                            {% for j,k in list_comments %}
+                                <tr>
+                                    <td>{{ j.title }} </td>
+                                    <td>{{ k.name }}</td>
+                                    <td>{{ j.comment }} </td>
+                                    <td>{{ j.user_name }}</td>
+                                    <td><a href="{{ url_for('.comment_delete', comment_id=j.id) }}"
+                                           class="btn btn-default" aria-label="delete">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                    </a> </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+{% endblock content %}

@@ -1,0 +1,50 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+            aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('.catalog') }}">Catalog</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('.catalog') }}">Home</a> </li>
+                {%  if current_user.is_authenticated %}
+                <li><a href="{{ url_for('.get_user') }}">Profile</a> </li>
+                {% endif %}
+                {% if current_user.is_admin %}
+                <li><a href="{{ url_for('admin.admin_index') }}">Admin Page</a> </li>
+                {% endif %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <!-- Feature to allow user to hide the sidebars -->
+
+                {% if current_user.is_authenticated %}
+                 <li><img src=" {{  current_user.picture }} " alt=" profile picture"  style = "width: 50px; height: 50px; border-radius: 25px;
+         -webkit-border-radius: 25px; -moz-border-radius: 25px;"></li>
+                <li><a href="{{ url_for('.get_user') }}">{{ current_user.nickname }}</a> </li>
+                <li><a href="{{ url_for('.gdisconnect') }}">Logout</a> </li>
+                {% else %}
+                <li><a href="{{ url_for('.login') }}">Login</a> </li>
+                {% endif %}
+            </ul>
+
+                <a href="#menu-toggle" class="btn btn-default" id="menu-toggle" aria-label="arrow-left" style="margin-top: 10px">
+                    <span class="glyphicon glyphicon-arrow-left pull-right" aria-hidden="true"></span>
+                </a>
+                <a href="#menu-toggle-right" class="btn btn-default" id="menu-toggle-right" aria-label="arrow-right" style="margin-top: 10px">
+                    <span class="glyphicon glyphicon-arrow-right pull-right" aria-hidden="true"></span>
+                </a>
+
+        </div>
+    </div>
+</nav>
+
+
+
+

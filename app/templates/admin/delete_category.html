@@ -1,0 +1,71 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <h2>Delete category</h2>
+        <h3>{{ category.name }}</h3>
+        <form class="form-horizontal" role="form" method="POST", action="", name="delete category">
+            <div class="form-group">
+                {{ confirmation_form.hidden_tag() }}
+                <label class="control-label col-sm-2" for="no/yes">
+                    {{ confirmation_form.confirmation.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ confirmation_form.confirmation }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="Type 'DeleteNow'">
+                    {{ confirmation_form.confirmation_phrase.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ confirmation_form.confirmation_phrase(size=12) }}
+                </div>
+            </div>
+            {% if category.children %}
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="no/yes">
+                        {{ children_form.children.label }}
+                    </label>
+                    <div class="col-sm-10">
+                        {{ children_form.children }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="parent">
+                        {{ children_form.category_id.label }}
+                    </label>
+                    <div class="col-sm-10">
+                        {{ children_form.category_id }}
+                    </div>
+                </div>
+            {% endif %}
+            {% if items != [] %}
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="items">
+                        {{ items_form.items.label }}
+                    </label>
+                    <div class="col-sm-10">
+                        {{ items_form.items }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="parent">
+                        {{ items_form.item_category.label }}
+                    </label>
+                    <div class="col-sm-10">
+                        {{ items_form.item_category }}
+                    </div>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <div class="col-lg-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+{% endblock content %}

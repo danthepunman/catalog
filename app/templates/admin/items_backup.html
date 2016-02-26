@@ -1,0 +1,37 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Categories that need to be exported</h1>
+                    </div>
+
+
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Category</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for category in categories_not_done %}
+                            <tr>
+                                <td><a href="{{ url_for('.items_backup_category', category_id=category.id) }}"> {{ category.name }}</a></td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

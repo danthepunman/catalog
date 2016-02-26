@@ -1,0 +1,368 @@
+<!-- Main layout -->
+<!-- calls Bootstrap base -->
+{% extends "bootstrap/base.html" %}
+
+
+<!-- calls super on Bootstrap head and imports jquery's latest -->
+{% block head %}
+    {{ super() }}
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+{% endblock head %}
+
+<!-- Title -->
+{% block title %}
+    {% if page_title %}
+    {{ page_title }}
+    {% else %}
+    Catalog
+    {% endif %}
+{% endblock %}
+
+<!-- Bootstrap fixes imported -->
+{% import "bootstrap/fixes.html" as fixes %}
+
+<!-- Style block: calls super for Bootstraps style, imports font-awesome and the local stylesheet -->
+{% block styles %}
+    {{super() }}
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+          href="{{url_for('static', filename='css/styles.css')}}">
+{% endblock styles %}
+
+<!-- Navbar imports from separate template -->
+{% block navbar %}
+    {% include 'navigation.html' %}
+{% endblock navbar %}
+
+
+<!-- Start Main Content -->
+{% block content %}
+    <div class="container" id="wrapper">
+        <div id="main" class="container clear-top">
+            <div class="row">
+                <div id="sidebar-wrapper">
+                    <div class="sidebar-nav">
+                        <div class="nav nav-sidebar">
+<!-- Start of the Left Sidebar -->
+                            <!-- Provides an add button for admin to add a category -->
+                            {% if current_user.is_admin %}
+                                <h1> Catalog
+                                    <a href="{{ url_for('admin.category_add') }}"
+                                       class="btn btn-default" id="edit" aria-label="add">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                    </a>
+                                </h1>
+                            {% else %} <!-- Otherwise it's just a heading -->
+                                <h1> Catalog </h1>
+                            {% endif %}
+
+                            <!-- Content to show if there is a category -->
+                            {% if category   %}
+
+                                <ul>
+                                    <!-- Iterate through the main categories -->
+                                    {% for item in child_of_root%}
+                                        {% if item.id != father.id %}
+                                            <li>
+                                                <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                                                    <span><i class="fa fa-folder-o"></i></span>
+                                                    {{ item.name }} </a>
+                                            </li>
+                                        <!-- father is the main category that has the category under it -->
+                                        {% elif item.id == father.id %}
+                                            <li>
+                                                <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                                                    <span><i class="fa fa-folder-open-o"></i></span>
+                                                    {{ item.name }} </a>
+                                            </li>
+                                            <!-- Iterate through the tree from main category to category -->
+                                            {% for p in parent_list|reverse %}
+                                                <li><a href="{{ url_for('.catalog_category', category_id=p.id) }}">
+                                                    <span><i class="fa fa-folder-open-o"></i></span>
+                                                    {{ p.name }} </a> </li>
+
+                                            {% endfor %}
+                                            <!-- Checking that the category is not the main category before printing it -->
+                                            {% if category.id != item.id %}
+                                                <li>
+                                                    <a href="{{ url_for('.catalog_category', category_id=category.id) }}">
+                                                        <span><i class="fa fa-folder-open-o"></i></span>
+                                                        {{ category.name }} </a>
+                                                </li>
+                                            {% endif %}
+                                            <!-- Checking the category for children category if so iterate through them -->
+                                            {% if children != none %}
+
+                                                {% for child in children %}
+                                                    <li><a href="{{ url_for('.catalog_category', category_id=child.id) }}">
+                                                        <span><i class="fa fa-folder-o"></i><i class="fa fa-folder-o"></i></span>
+                                                        {{ child.name }} </a></li>
+                                                {% endfor %}
+
+                                            {% endif %}
+
+
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+
+                            <!-- if no category is selected then just the main categories are presented  -->
+                            {% else %}
+
+                                <ul>
+                                    {% for item in child_of_root %}
+                                        <li>
+                                            <p> <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                                                <span><i class="fa fa-folder-o"></i></span>
+                                                {{ item.name }} </a></p>
+                                        </li>
+                                    {% endfor %}
+
+                                </ul>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+<!-- End sidebar -->
+<!-- Start of middle section -->
+                <div id="page-content-wrapper">
+                    <div class="container-fluid">
+                        <!-- Pulls in any message posted from the application -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                {% include 'messages.html' %}
+                            </div>
+                        </div>
+                        <!-- Feature to allow user to hide the sidebars -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <a href="#menu-toggle" class="btn btn-default" id="menu-toggle" aria-label="arrow-left">
+                                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                                </a>
+                                <a href="#menu-toggle-right" class="btn btn-default" id="menu-toggle-right" aria-label="arrow-right">
+                                    <span class="glyphicon glyphicon-arrow-right pull-right" aria-hidden="true"></span>
+                                </a>
+                            </div>
+                        </div>
+<!-- Upper middle section -->
+
+                        <!-- This is the categories and items created by the admin and connected with Amazon products -->
+                        {% if category %}
+                            <!-- If category is selected gives the category name -->
+                            <div class="row">
+                                <div class="page-header page-header-block">
+                                    <div class="page-header-section">
+                                        <h4 class="title semibold">{{ category.name }}</h4>
+                                        <!-- If items are present, adds to the header -->
+                                        {% if items %}
+                                            <h3>Items in this category:</h3>
+                                        {% endif %}
+                                        <!-- Feature for user to favorite the category -->
+                                        {% if current_user.is_authenticated %}
+                                            {% if category in favorites_list %}
+                                                <a href="{{ url_for('.remove_favorites', category_id=category.id) }}">Remove from Favorites
+                                                    <i class="fa fa-heart"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('.add_favorite', category_id=category.id) }}">Add to Favorites
+                                                    <i class="fa fa-heart-o"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                        <!-- Dropdown menu for admin to work with category and items -->
+                                        {% if current_user.is_admin %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                    Admin
+                                                    <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                                    <li><a href="{{ url_for('admin.category_add') }}"> Add a category </a></li>
+                                                    <li><a href="{{ url_for('admin.add_five_categories', category_id=category.id) }}"> Add five categories </a></li>
+                                                    <li><a href="{{ url_for('admin.category_edit', category_id=category.id) }}">Edit Category</a></li>
+                                                    <li><a href="{{ url_for('admin.category_delete', category_id=category.id) }}">Delete Category</a></li>
+                                                    {% if items %}
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ url_for('admin.amazon_node_search', category_id=category.id) }}"> Get Amazon items </a></li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <!-- Displays the children of category -->
+                        {% if children %}
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4>Children of Category</h4>
+                                <ul>
+                                    {% for child in children %}
+                                        <li>
+                                            <p> <a href="{{ url_for('.catalog_category', category_id=child.id) }}">
+                                                <span><i class="fa fa-folder-o"></i><i class="fa fa-folder-o"></i></span>
+                                                {{ child.name }} </a></p>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- If category has items they are displayed here -->
+                        {% if items %}
+                            <div class="row">
+                                <div class="col-lg-12">
+
+                                    {% for item in items %}
+
+                                        <div class="wrapper">
+                                            <div class="col-lg-3">
+                                                <div class=" item masonry-brick">
+                                                    <div class="picture">
+                                                        <a class="image" title="Title" href="#">
+                                                            <img alt="" src="{{ item.medium_image }}">
+                                                        </a>
+                                                    </div>
+                                                    <div class="item-content">
+                                                        <div class="title">
+                                                            <p> {{ item.name }} </p>
+                                                        </div>
+                                                        <div class="brand">
+                                                            <p> {{ item.brand }} </p>
+                                                        </div>
+
+                                                        <div class="description">
+                                                            <p> {{ item.description|truncate(100) }}</p>
+                                                        </div>
+                                                        <div class="meta">
+                                                            <div>
+                                                                {% if item.is_liked %}
+                                                                    <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                                                        <i class="fa fa-thumbs-up"></i></a>
+                                                                {% else %}
+                                                                    <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                                                        <i class="fa fa-thumbs-o-up"></i></a>
+                                                                {% endif %}
+                                                                {% if item.like_count > 0 %}
+                                                                    <small>{{ item.like_count }}</small>
+                                                                {% endif %}
+
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ url_for('.item_comment', item_id=item.id) }}">
+                                                                    <i class="fa fa-comment-o"></i></a>
+                                                                {% if item.comments_count > 0 %}
+                                                                    <small>{{ item.comments_count }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ url_for(item.offers) }}">
+                                                                    <i class="fa fa-cart-plus"></i></a>
+                                                            </div>
+                                                            {% if current_user.is_admin %}
+                                                                <div>
+                                                                    <p><a href="{{ url_for('admin.item_edit', item_id=item.id) }}">Edit Item</a>
+                                                                        <a href="{{ url_for('admin.item_delete', item_id=item.id) }}">Delete Item</a>
+                                                                    </p>
+                                                                </div>
+                                                            {% endif %}
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+<!-- End of upper middle -->
+<!-- Start of the lower middle -->
+<!-- This is user created content -->
+                        <div class="row">
+                        </div>
+<!-- End of Lower Middle -->
+
+                    </div>
+
+                </div>
+
+<!-- End of Middle Section -->
+<!-- Start of Right Sidebar -->
+            <div id="sidebar-right-wrapper">
+                <div class="sidebar-nav pull-right">
+                    <div class="nav nav-sidebar">
+                        <!-- Shows the favorites of the user  -->
+                        {% if current_user.is_authenticated %}
+                            <h1> Favorites </h1>
+
+
+
+                        <ul>
+                            {% for favorite in favorites_list %}
+                                <li>
+                                    <p><a>{{ favorite.name }}</a></p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+<!-- End of the right sidebar -->
+        </div>
+    </div>
+    </div>
+
+<!-- End of the Main Content -->
+<!-- Start of the Footer -->
+    <footer class="navbar navbar-fixed-bottom navbar-inverse">
+        <div class="container">
+            <a href="{{ url_for('main.privacy_statement') }}">Privacy Policy</a>
+        </div>
+    </footer>
+<!-- End of the footer -->
+{% endblock content %}
+
+<!-- Start of the scripts -->
+{% block scripts %}
+    {{ super() }}
+    <!-- Scriipt for the arrows that move the sidebar out and into view -->
+    <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+            if($('a span').hasClass('glyphicon-arrow-left'))
+            {
+                $('#menu-toggle').html('<span class="glyphicon glyphicon-arrow-right"></span>');
+            }
+            else
+            {
+                $('#menu-toggle').html('<span class="glyphicon glyphicon-arrow-left"></span>');
+            }
+        });
+
+        $("#menu-toggle-right").click(function(f) {
+            f.preventDefault();
+            $("#wrapper").toggleClass("toggledRight");
+            if($('a span').hasClass('glyphicon-arrow-right'))
+            {
+                $('#menu-toggle-right').html('<span class="glyphicon glyphicon-arrow-left"></span>');
+            }
+            else
+            {
+                $('#menu-toggle-right').html('<span class="glyphicon glyphicon-arrow-right"></span>');
+            }
+        });
+
+    </script>
+
+{% endblock scripts %}
+<!-- End of scripts -->
+<!-- End of documents -->

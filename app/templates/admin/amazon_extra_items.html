@@ -1,0 +1,74 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <div class="row">
+            <h2>Page {{ page }} Adding items to <a href="{{ url_for('main.catalog_category', category_id=category.id) }}">{{ category.name }}</a> </h2>
+        </div>
+        <hr>
+        {% for item in new_items %}
+            <div class="row row-margin-bottom">
+                <div class="col-md-5 no-padding lib-item" data-category="view">
+                    <div class="lib-panel">
+                        <div class="row box-shadow">
+                            <div class="col-md-6">
+                                <img class="lib-img-show" src="{{ item.small_image }}", style="width:75px;height:75px">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="lib_row lib-header">
+                                    {{ item.name }}
+                                    <div class="lib-header-separator"></div>
+                                </div>
+                                <div class="lib-row lib-desc">
+                                    {{ item.description|truncate(300) }}
+                                </div>
+                                <div class="lib-row lib-remove">
+                                    <a href="{{ url_for('.amazon_remove_item', category_id=category_id, amazon_search_id=amazon_search_id, asin=item.asin) }}">
+                                        Remove Item
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <div>
+            {% if search.max_pages > 1  %}
+                <ul class="pagination">
+                    <li>
+                        <a href="{{ url_for('.amazon_extra_items', category_id=category_id, amazon_search_id=amazon_search_id, page=page-1) }}"
+                           aria-label="Previous"> <span aria-hidden="true">&laquo;</span>
+                        </a> </li>
+                    {% for pages in range(search.max_pages) %}
+                        {% if pages == page - 1 %}
+                        <li class="active"><span>{{ page }}<span class="sr-only">(current)</span> </span> </li>
+
+                        {% elif pages == 0 %}
+                            <li>
+                                <a href="{{ url_for('.amazon_add_items', category_id=category_id, amazon_search_id=amazon_search_id) }}">
+                                    {{ pages + 1 }}
+                                </a> </li>
+                        {% else %}
+                            <li>
+                                <a href="{{ url_for('.amazon_extra_items', category_id=category_id, amazon_search_id=amazon_search_id, page=pages+1) }}">
+                                    {{ pages + 1 }}
+                                </a> </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page != 10 %}
+                        <li>
+                            <a href="{{ url_for('.amazon_extra_items', category_id=category_id, amazon_search_id=amazon_search_id, page=page+1) }}"
+                               aria-label="Next"><span aria-hidden="true">&raquo;</span>
+                            </a> </li>
+                    {% endif %}
+                </ul>
+            {% endif %}
+        </div>
+
+
+    </div>
+
+
+{% endblock content %}

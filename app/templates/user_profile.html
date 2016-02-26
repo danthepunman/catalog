@@ -1,0 +1,33 @@
+{% extends "catalog.html" %}
+
+{% block upper %}
+    {{ super() }}
+    <img src=" {{ user.picture }} " alt="Profile picture"
+         style = "width: 100px; height: 100px; border-radius: 50px;
+         -webkit-border-radius: 50px; -moz-border-radius: 50px;">
+    <h3>
+    {{ current_user.nickname }}
+    </h3>
+    <h5>{{ user.email }}</h5>
+    <h5> Thumbtacks</h5>
+    {% for thumb in user.thumbtack %}
+        <ul>
+        <li><a href="{{ url_for('.edit_thumbtack', category_id=thumb.category, thumbtack_id=thumb.id) }}">
+            {{ thumb.name }}</a>
+            <a  href="{{ url_for('.delete_thumbtack', category_id=thumb.category, thumbtack_id=thumb.id) }}"><i class="fa fa-trash"></i></a>
+        </li>
+        </ul>
+    {% endfor %}
+    <h5> Comments</h5>
+    {% for comment in user.comments %}
+        <ul>
+        <li><a href="{{ url_for('.edit_comment', item_id=comment.item, comment_id=comment.id) }}">
+            {{ comment.title }}</a>
+        <a href="{{ url_for('.delete_comment', item_id=comment.item, comment_id=comment.id) }}">
+            <i class="fa fa-trash"></i></a>
+        </li>
+        </ul>
+    {% endfor %}
+
+
+{% endblock upper %}

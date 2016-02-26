@@ -1,0 +1,168 @@
+{% extends "catalog.html" %}
+{% block inner_catalog %}
+    {{ super() }}
+
+                                <ul>
+                                    <!-- Iterate through the main categories -->
+                                    {% for item in child_of_root%}
+                                        {% if item.id != father.id %}
+                                            <li>
+                                                <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                                                    <span><i class="fa fa-folder-o"></i></span>
+                                                    {{ item.name }} </a>
+                                            </li>
+                                        <!-- father is the main category that has the category under it -->
+                                        {% elif item.id == father.id %}
+                                            <li>
+                                                <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                                                    <span><i class="fa fa-folder-open-o"></i></span>
+                                                    {{ item.name }} </a>
+                                            </li>
+                                            <!-- Iterate through the tree from main category to category -->
+                                            {% for p in parent_list|reverse %}
+                                                <li><a href="{{ url_for('.catalog_category', category_id=p.id) }}">
+                                                    <span><i class="fa fa-folder-open-o"></i></span>
+                                                    {{ p.name }} </a> </li>
+
+                                            {% endfor %}
+                                            <!-- Checking that the category is not the main category before printing it -->
+                                            {% if category.id != item.id %}
+                                                <li>
+                                                    <a href="{{ url_for('.catalog_category', category_id=category.id) }}">
+                                                        <span><i class="fa fa-folder-open-o"></i></span>
+                                                        {{ category.name }} </a>
+                                                </li>
+                                            {% endif %}
+                                            <!-- Checking the category for children category if so iterate through them -->
+                                            {% if children != none %}
+
+                                                {% for child in children %}
+                                                    <li><a href="{{ url_for('.catalog_category', category_id=child.id) }}">
+                                                        <span><i class="fa fa-caret-square-o-right"></i><i class="fa fa-folder-o"></i></span>
+                                                        {{ child.name }} </a></li>
+                                                {% endfor %}
+
+                                            {% endif %}
+
+
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+{% endblock inner_catalog %}
+
+
+{% block upper %}
+    {{ super() }}
+    <div class="row">
+        <div class="wrapper">
+            <div class="col-lg-6">
+                <div class=" item masonry-brick">
+                    <div class="picture">
+                        <a class="image" title="Title" href="#">
+                            <img alt="" src="{{ item.large_image }}">
+                        </a>
+                    </div>
+                    <div class="item-content">
+                        <div class="title">
+                            <p> {{ item.name }} </p>
+                        </div>
+                        <div class="brand">
+                            <p> {{ item.brand }} </p>
+                        </div>
+
+                        <div class="description">
+                            <p> {{ item.description }}</p>
+                        </div>
+
+                        <div class="meta">
+                        {% if current_user.is_authenticated %}
+
+                            {% if item.is_liked %}
+                                <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                    <i class="fa fa-thumbs-up"></i></a>
+                            {% else %}
+                                <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                    <i class="fa fa-thumbs-o-up"></i></a>
+                            {% endif %}
+                        {% else %}
+                        <i class="fa fa-thumbs-up"></i>
+                        {% endif %}
+                            {% if item.like_count > 0 %}
+                                <small>{{ item.like_count }}</small>
+                            {% endif %}
+
+
+
+                            <a href="{{ url_for('.add_comment', category_id=category.id, item_id=item.id) }}">
+                                <i class="fa fa-comment-o"></i></a>
+                            {% if item.comments_count > 0 %}
+                                <small>{{ item.comments_count }}</small>
+                            {% endif %}
+
+
+                            <a href="{{ item.offers }}">
+                                <i class="fa fa-cart-plus"></i></a>
+
+                            {% if current_user.is_admin %}
+                                <div>
+                                    <p>
+                                        <a href="{{ url_for('admin.item_delete', item_id=item.id) }}">Delete Item</a>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock upper %}
+{% block middle_lower %}
+    <div class="container clear-top">
+        <div class="row">
+            <div class="page-header page-header-block">
+                <div class="page-header-section">
+                    <h4 class="title float">Comments</h4>
+                    {% if current_user.is_authenticated %}
+                        <a class="float" href="{{ url_for('.add_comment',item_id=item.id) }}">Add a comment
+                            <i class="fa fa-plus-square-o"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if comments %}
+        <section>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="horizontal-thumbtack">
+                        <div class="table table-horizontal-thumbtack">
+                            {% for comment in comments %}
+                                <article>
+                                    <div id="thumbtacks pull-left">
+                                        <div class="thumbnail thumbtack"><i class="fa fa-thumb-tack"></i>
+                                            <div class="caption">
+                                                <h5 class="thumb">{{ comment.title }}</h5>
+                                                <p class="thumb"> <a href="{{ url_for('.profile', user_id=comment.user) }}">
+                                                Created by {{ comment.user_name }}</a></p>
+                                                <p class="thumb">{{ comment.comment }}</p>
+                                                {% if current_user.id == comment.user %}
+                                                    <p class="thumb"><a class="thumb" href="{{ url_for('.edit_comment', item_id=comment.item, comment_id=comment.id) }}">
+                                                        Edit Comment<i class="fa fa-pencil-square-o"></i></a></p>
+                                                    <p class="thumb"><a class="thumb" href="{{ url_for('.delete_comment', item_id=comment.item, comment_id=comment.id) }}">
+                                                        Delete Comment<i class="fa fa-trash"></i></a></p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+{% endblock middle_lower %}

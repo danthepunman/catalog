@@ -1,0 +1,67 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Categories that have items backed up.</h1>
+                    </div>
+
+
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Category</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for category in categories_list %}
+                            <tr>
+                                <td><a href="{{ url_for('.items_recover_category', category_id=category.id) }}"> {{ category.name }}</a></td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Categories that already have items but is backed up.</h1>
+                    </div>
+
+
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Category</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for category in categories_already_recovered %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

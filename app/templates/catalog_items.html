@@ -1,0 +1,71 @@
+{% extends "catalog_category.html" %}
+{% block inner_catalog %}
+    {{ super() }}
+{% endblock inner_catalog %}
+<!-- If category has items they are displayed here -->
+{% block items %}
+    {% if items %}
+
+
+        {% for item in items %}
+            <article>
+
+
+                <div class= thumbnail>
+                    <a class="image" title="Title" href={{ url_for('.item_details',category_id=category_id, item_id=item.id) }}>
+                        <img alt="" src="{{ item.medium_image }}">
+                    </a>
+                    <div class="caption">
+
+                        <h3> {{ item.name }} </h3>
+                        <p> {{ item.brand }} </p>
+                        <p> {{ item.description|truncate(100) }}</p>
+                        {% if current_user.is_authenticated %}
+
+                            {% if item.is_liked %}
+                                <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                    <i class="fa fa-thumbs-up"></i></a>
+                            {% else %}
+                                <a href="{{ url_for('.item_favorite', item_id=item.id) }}">
+                                    <i class="fa fa-thumbs-o-up"></i></a>
+                            {% endif %}
+                        {% else %}
+                            <i class="fa fa-thumbs-up"></i>
+                        {% endif %}
+                        {% if item.like_count > 0 %}
+                            <small>{{ item.like_count }}</small>
+                        {% endif %}
+
+
+                        <a href="{{ url_for('.add_comment', item_id=item.id) }}">
+                            <i class="fa fa-comment-o"></i></a>
+                        {% if item.comments_count > 0 %}
+                            <small>{{ item.comments_count }}</small>
+                        {% endif %}
+
+
+                        <a href="{{ item.offers }}">
+                            <i class="fa fa-cart-plus"></i></a>
+
+                        {% if current_user.is_admin %}
+                            <p>
+
+                                <a href="{{ url_for('admin.item_delete', item_id=item.id) }}">Delete Item</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </article>
+
+        {% endfor %}
+
+
+    {% endif %}
+{% endblock items %}
+<!-- End of item layout -->
+<!-- End of upper middle -->
+
+{% block middle_lower %}
+    {{ super() }}
+{% endblock middle_lower %}

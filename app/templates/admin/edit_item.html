@@ -1,0 +1,38 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+    <div class="container" id="outershell">
+        <h2>Edit item</h2>
+        <h3>item.name</h3>
+        <form class="form-horizontal" role="form" method="POST", action="", name="edit item">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                <label class="control-label col-sm-2" for="name">Name:</label>
+                <div class="col-sm-10">
+                    {{ form.item(size=120) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category">Edit the category:</label>
+                <div class="col-sm-10">
+                    {{ form.category_id }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="description">
+                    Edit the description:
+                </label>
+                <div class="col-sm-10">
+            {{ form.description }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Edit</button>
+                </div>
+                </div>
+        </form>
+    </div>
+
+
+{% endblock content %}

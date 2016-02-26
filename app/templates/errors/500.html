@@ -1,0 +1,38 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+    {% if category %}
+    Catalog: {{ category.name }}
+    {% else %}
+    Catalog
+    {% endif %}
+{% endblock %}
+
+<!-- Bootstrap fixes imported -->
+{% import "bootstrap/fixes.html" as fixes %}
+
+<!-- Style block: calls super for Bootstraps style, imports font-awesome and the local stylesheet -->
+{% block styles %}
+    {{super() }}
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+          href="{{url_for('static', filename='css/error_styles.css')}}">
+{% endblock styles %}
+{% block content %}
+<div class="error">
+<!-- Template is from http://bootsnipp.com/snippets/BDm1D -->
+        <div class="error-code m-b-10 m-t-20">500 <i class="fa fa-warning"></i></div>
+        <h3 class="font-bold">We couldn't find the page..</h3>
+
+        <div class="error-desc">
+            Sorry, we need a gut check ... Yep, there was an internal server error! <br/>
+            Try refreshing the page or click the button below to go back to the Homepage.
+            <div>
+                <a class=" login-detail-panel-button btn" href="{{ url_for('.main.catalog') }}">
+                        <i class="fa fa-arrow-left"></i>
+                        Go back to Homepage
+                    </a>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

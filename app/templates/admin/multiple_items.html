@@ -1,0 +1,69 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+    <div class="container" id="outershell">
+        <h2>Enter the names of the new items.</h2>
+        <h4>Parent Category will be {{ category.name }}</h4>
+        <form class="form-horizontal" role="form" method="POST", action="", name="name of categories">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                <label class="control-label col-sm-2" for="item 1">{{ form.name1.label }}</label>
+                <div class="col-sm-10">{{ form.name1(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.description1.label }}</label>
+                <div class="col-sm-10">{{ form.description1(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.name2.label }}</label>
+                <div class="col-sm-10">{{ form.name2(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.description2.label }}</label>
+                <div class="col-sm-10">{{ form.description2(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.name3.label }}</label>
+                <div class="col-sm-10">{{ form.name3(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.description3.label }}</label>
+                <div class="col-sm-10">{{ form.description3(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.name4.label }}</label>
+                <div class="col-sm-10">{{ form.name4(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.description4.label }}</label>
+                <div class="col-sm-10">{{ form.description4(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.name5.label }}</label>
+                <div class="col-sm-10">{{ form.name5(size=80) }}</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="item 1">{{ form.description5.label }}</label>
+                <div class="col-sm-10">{{ form.description5(size=80) }}</div>
+            </div>
+            {% if items %}
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="items">Move items to:</label>
+                    <div class="col-sm-10">
+                        {{ form.items_move }}
+                    </div>
+                </div>
+            {% endif %}
+
+
+            <div class="col-lg-offset-2 col-sm-10">
+
+            <button type="submit" class="btn btn-default">Add</button>
+
+            </div>
+        </form>
+
+    </div>
+
+
+{% endblock content %}

@@ -1,0 +1,29 @@
+{% extends "catalog.html" %}
+
+{% block upper %}
+    {{ super() }}
+
+    <div class="container">
+        <h1>Edit your comment titled {{ comment.title }} for {{ item.name }}:</h1>
+        <form class="form-horizontal" role="form" method="POST", action="", name="item_comment">
+            <div class="form-group">
+                {{ comment_edit.hidden_tag() }}
+                <label class="control-label col-sm-2" for="comment">{{ comment_edit.title.label }}</label>
+                <div class="col-sm-10">
+                    {{ comment_edit.title }}<br>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="comment">{{ comment_edit.comment.label }}</label>
+                <div class="col-sm-10">
+                    {{ comment_edit.comment }}<br>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-lg-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Update</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock upper %}

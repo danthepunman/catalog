@@ -1,0 +1,47 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <h1 class="panel-title">Items</h1>
+
+                        </div>
+
+                    </div>
+
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td><a href="{{ url_for('main.catalog_category', category_id=item.category_id) }}">{{ item.name }}</a></td>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.category_id }}</td>
+                                <td>{{ item.description }}</td>
+                                <td><a href="{{ url_for('.item_delete', item_id=item.id) }}"
+                                       class="btn btn-default" aria-label="delete">
+                                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                </a> </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

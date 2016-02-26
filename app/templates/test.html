@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block middle %}
+    <ul>
+    {% for item in child_of_root%}
+        <li>
+        <a href="{{ url_for('.catalog_category', category_id=parent.id) }}">
+                        {{ item.name }} </a>
+        {% if parent.id == item.id %}
+            <ul>
+
+
+            {% for p in parent_list|reverse %}
+            <li>
+            <a href="{{ url_for('.catalog_category', category_id=parent.id) }}">
+                        {{ p.name }} </a>
+            </li>
+            {% endfor %}
+            </li>
+            </ul>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endblock %}

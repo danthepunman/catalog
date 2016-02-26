@@ -1,0 +1,149 @@
+{% extends "catalog.html" %}
+{% block inner_catalog %}
+    {{ super() }}
+
+    <ul>
+        <!-- Iterate through the main categories -->
+        {% for item in child_of_root%}
+            {% if item.id != father.id %}
+                <li>
+                    <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                        <span><i class="fa fa-folder-o"></i></span>
+                        {{ item.name }} </a>
+                </li>
+                <!-- father is the main category that has the category under it -->
+            {% elif item.id == father.id %}
+                <li>
+                    <a href="{{ url_for('.catalog_category', category_id=item.id) }}">
+                        <span><i class="fa fa-folder-open-o"></i></span>
+                        {{ item.name }} </a>
+                </li>
+                <!-- Iterate through the tree from main category to category -->
+                {% for p in parent_list|reverse %}
+                    <li><a href="{{ url_for('.catalog_category', category_id=p.id) }}">
+                        <span><i class="fa fa-folder-open-o"></i></span>
+                        {{ p.name }} </a> </li>
+
+                {% endfor %}
+                <!-- Checking that the category is not the main category before printing it -->
+                {% if category.id != item.id %}
+                    <li>
+                        <a href="{{ url_for('.catalog_category', category_id=category.id) }}">
+                            <span><i class="fa fa-folder-open-o"></i></span>
+                            {{ category.name }} </a>
+                    </li>
+                {% endif %}
+                <!-- Checking the category for children category if so iterate through them -->
+                {% if children != none %}
+
+                    {% for child in children %}
+                        <li><a href="{{ url_for('.catalog_category', category_id=child.id) }}">
+                            <span><i class="fa fa-caret-square-o-right"></i><i class="fa fa-folder-o"></i></span>
+                            {{ child.name }} </a></li>
+                    {% endfor %}
+
+                {% endif %}
+
+
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock inner_catalog %}
+
+
+{% block upper %}
+    {{ super() }}
+
+    <!-- Upper middle section -->
+    <!-- Displays the children of category -->
+    {% if children %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h4>Children of Category</h4>
+                    <ul>
+                        {% for child in children %}
+                            <li>
+                                <p> <a href="{{ url_for('.catalog_category', category_id=child.id) }}">
+                                    <span><i class="fa fa-caret-square-o-right"></i><i class="fa fa-folder-o"></i></span>
+                                    {{ child.name }} </a></p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <section>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="horizontal">
+                    <div class="table table-horizontal">
+                        {% block items %}
+                        {% endblock items %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {# Continue in catalog_item if items are present #}
+{% endblock upper %}
+
+{% block middle_lower %}
+    {{ super() }}
+    {% block lower %}
+        <div class="container clear-top">
+            <div class="row">
+                <div class="page-header page-header-block">
+                    <div class="page-header-section">
+                        <h4 class="title float">Thumbtacks</h4>
+                        {% if current_user.is_authenticated %}
+                            <a class="float" href="{{ url_for('.add_thumbtack_type', category_id=category.id) }}">Add a thumbtack
+                                <i class="fa fa-plus-square-o"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if thumbtacks %}
+            <section>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="horizontal-thumbtack">
+                            <div class="table table-horizontal-thumbtack">
+                                {% for thumb in thumbtacks %}
+                                    <article>
+                                        <div id="thumbtacks pull-left">
+                                            <div class="thumbnail thumbtack"><i class="fa fa-thumb-tack"></i>
+                                                {% if thumb.image %}
+                                                    <img class="" alt="" src="{{ thumb.image }}">
+                                                {% endif %}
+                                                <div class="caption">
+                                                    <h5 class="thumb">{{ thumb.name }}</h5>
+                                                    <p class="thumb"><a href="{{ url_for('.profile', user_id=thumb.user) }}">
+                                                        Created by {{ thumb.user_name }}</a></p>
+                                                    <p class="thumb">{{ thumb.description|truncate(100) }}</p>
+                                                    {% if thumb.asin %}
+                                                        <p class="thumb">{{ thumb.asin }}</p>
+                                                    {% endif %}
+                                                    {% if current_user.id == thumb.user %}
+                                                        <p class="thumb"><a class="thumb" href="{{ url_for('.edit_thumbtack', category_id=category.id, thumbtack_id=thumb.id) }}">
+                                                            Edit Thumbtack<i class="fa fa-pencil-square-o"></i></a></p>
+                                                        <p class="thumb"><a class="thumb" href="{{ url_for('.delete_thumbtack', category_id=category.id, thumbtack_id=thumb.id) }}">
+                                                            Delete Thumbtack<i class="fa fa-trash"></i></a></p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+    {% endblock lower %}
+{% endblock middle_lower %}
+

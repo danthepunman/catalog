@@ -1,0 +1,229 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+    {% include 'messages.html' %}
+    <div class="container" id="wrapper-admin">
+        <div id="main" class="container clear-top">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Admin Commands</h3>
+                                </div>
+                                <div class="panel-body">
+                                    {# Add Categories #}
+                                        <a href="{{ url_for('.category_add') }}" class="btn btn-default" id="add_category" aria-label="add">
+                                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                            Add a Category
+                                        </a>
+                                        <a href="{{ url_for('.categories_add_5') }}"
+                                           class="btn btn-default" id="add_5" aria-label="add 5">
+                                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                            Add 5 Categories
+                                        </a>
+                                    <a href="{{ url_for('.database_create_categories') }}"
+                                           class="btn btn-default" id="create" aria-label="add 5">
+                                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                            Add all categories
+                                        </a>
+                                    <a href="{{ url_for('.database_empty_categories') }}"
+                                           class="btn btn-default" id="empty_categories" aria-label="add 5">
+                                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                            Delete all categories and items
+                                        </a>
+
+
+                                    {# Add Items to an empty category #}
+                                    <a href="{{ url_for('.amazon_node_search', category_id=first_category_need_items.id) }}"
+                                       class="btn btn-default" id="node_search" aria-label="add">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                        Add items to first empty category:{{ first_category_need_items.name }}
+                                    </a>
+                                    {# Add more Items to a category #}
+                                    <a href="{{ url_for('.categories_with_items') }}"
+                                       class="btn btn-default" id="cat_with_items" aria-label="add">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                        Categories with Items
+                                    </a>
+                                    {# Amazon Api searches #}
+                                    <a href="{{ url_for('.amazon_searches') }}"
+                                       class="btn btn-default" id="amazon_searches" aria-label="add">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        Amazon Searches
+                                    </a>
+                                    {# All Thumbtacks #}
+                                    <a href="{{ url_for('.thumbtacks_all') }}"
+                                       class="btn btn-default" id="thumbtacks_all" aria-label="add">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        Thumbtacks
+                                    </a>
+                                    {# All Comments #}
+                                    <a href="{{ url_for('.comments_all') }}"
+                                       class="btn btn-default" id="comments_all" aria-label="add">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        Comments
+                                    </a>
+                                    {# Backup items from the database#}
+                                    <a href="{{ url_for('.items_backup') }}"
+                                       class="btn btn-default" id="backup" aria-label="add">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        Backup Items
+                                    </a>
+                                    {# Backup items from the database#}
+                                    <a href="{{ url_for('.items_recover') }}"
+                                       class="btn btn-default" id="recover" aria-label="add">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        Recover Items
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Categories: number of categories (cats with children, cats waiting items  -->
+                    <div class="row">
+                        <div class="col-sm-3 col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><a href="{{ url_for('admin.categories_all') }}">Categories</a></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Number of categories: {{ categories }}</p>
+                                    <p>Categories that need items added: {{ categories_need_items }}</p>
+                                    <p>Go to first category that needs items:
+                                        <a href="{{ url_for('.amazon_node_search', category_id=first_category_need_items.id) }}">
+                                            {{ first_category_need_items.name }}
+                                        </a>
+                                    </p>
+                                    <p>Categories with the most favorites categories: </p>
+                                    <ul>
+                                        {% for category in top_five_categories_favorite %}
+                                            <li>{{ category }}</li>
+                                        {% endfor %}
+                                    </ul>
+
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Users: most active  -->
+
+                        <div class="col-sm-3 col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><a href="{{ url_for('admin.users_all') }}">Users</a></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Number of users: {{ users }}</p>
+                                    <p>Users with the most favorite categories: </p>
+                                    <ul>
+                                        {% for user in user_with_most_fav_categories %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Users with the most items liked:</p>
+                                    <ul>
+                                        {% for user in user_with_most_fav_items %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Users with the most comments:</p>
+                                    <ul>
+                                        {% for user in with_most_comments %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Users with the most thumbtacks:</p>
+                                    <ul>
+                                        {% for user in user_with_most_thumbtacks %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Items: most liked  -->
+                    <div class="row">
+                        <div class="col-sm-3 col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><a href="{{ url_for('admin.items_all') }}">Items</a></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Number of items: {{ items }}</p>
+                                    <p>Items liked most:</p>
+                                    <ul>
+                                        {% for user in item_with_most_likes %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Items most commented:</p>
+                                    <ul>
+                                        {% for user in item_with_most_comments %}
+                                            <li>{{ user }}</li>
+                                        {% endfor %}
+                                    </ul>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Thumbtacks: ones waiting reviewed -->
+
+                        <div class="col-sm-3 col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><a href="{{ url_for('.thumbtacks_all') }}">Thumbtacks</a></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Thumbtacks: {{ thumbtacks }}</p>
+                                    <p>Number of thumbtacks that need review: {{ thumbtacks_need_review }}</p>
+                                    <p><a href="{{ url_for('.thumbtacks_admin_screen') }}">
+                                        Screen Thumbtacks
+                                    </a></p>
+                                    <p>Thumbtack titles vs categories:</p>
+                                    {% for j,k in category_with_thumbtacks %}
+                                        <p> Category: {{ j }} vs Thumbtack: {{ k }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Comments  -->
+                    <div class="row">
+                        <div class="col-sm-3 col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><a href="{{ url_for('.comments_all') }}">Comments</a></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Number of Comments: {{ comments }}</p>
+                                    <p>Number of comments that need to be reviewed: {{ comments_need_review }}</p>
+                                    <p><a href="{{ url_for('.comments_admin_screen') }}">
+                                        Screen Comments
+                                    </a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock content %}

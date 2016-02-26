@@ -1,0 +1,177 @@
+
+{% extends "bootstrap/base.html" %}
+<!-- Main layout -->
+<!-- calls Bootstrap base -->
+
+<!-- calls super on Bootstrap head and imports jquery's latest -->
+{% block head %}
+    {{ super() }}
+    <link href='https://fonts.googleapis.com/css?family=Rock+Salt' rel='stylesheet' type='text/css'>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+{% endblock head %}
+
+<!-- Title -->
+{% block title %}
+    {% if category %}
+    Catalog: {{ category.name }}
+    {% else %}
+    Catalog
+    {% endif %}
+{% endblock %}
+
+<!-- Bootstrap fixes imported -->
+{% import "bootstrap/fixes.html" as fixes %}
+
+<!-- Style block: calls super for Bootstraps style, imports font-awesome and the local stylesheet -->
+{% block styles %}
+    {{super() }}
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+          href="{{url_for('static', filename='css/styles.css')}}">
+{% endblock styles %}
+
+<!-- Navbar imports from separate template -->
+{% block navbar %}
+    {% include 'navigation.html' %}
+{% endblock navbar %}
+
+
+
+<!-- Start Main Content -->
+{% block content %}
+    <div class="container" id="wrapper">
+        <div id="main" class="container clear-top">
+            <div class="row">
+                <div id="sidebar-wrapper">
+                    <div class="sidebar-nav">
+                        <div class="nav nav-sidebar">
+                        {# Block is expanded in the catalog.html #}
+                        {% block catalog %} {% endblock catalog %}
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+<!-- End sidebar -->
+<!-- Start of middle section -->
+
+            {% block upper %}
+
+                <div id="page-content-wrapper" style="margin-left: -80px; margin-right: -60px;">
+                    <div class="container-fluid">
+                        <!-- Pulls in any message posted from the application -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                {% include 'messages.html' %}
+                            </div>
+                        </div>
+                {# Continues in Catalog.html template #}
+
+{% endblock upper %}
+
+
+{% block middle_lower %}
+<!-- Start of the lower middle -->
+<!-- This is user created content -->
+                    <div class="horizontal-thumbtack clearfix">
+                        <div class="row ">
+                            <div class="col-lg-12">
+                                {% if item_details %}
+                                {% block comments %}
+                                {% endblock comments %}
+                                {% else %}
+                                {% block lower %}
+                                {% endblock lower %}
+                                {% endif %}
+                            </div>
+                        </div>
+    </div>
+{% endblock middle_lower %}
+<!-- End of Lower Middle -->
+                    </div>
+
+
+                </div>
+
+<!-- End of Middle Section -->
+<!-- Start of Right Sidebar -->
+            <div id="sidebar-right-wrapper">
+                <div class="sidebar-nav pull-right">
+                    <div class="nav nav-sidebar">
+                        <!-- Shows the favorites of the user  -->
+                        {% if current_user.is_authenticated %}
+                            <h3> Favorite Categories </h3>
+                        <ul>
+                            {% for favorite in category_favorite_list %}
+                                <li>
+                                    <a href="{{ url_for('.catalog_category', category_id=favorite.id) }}">
+                                                <span><i class="fa fa-folder-o"></i></span>{{ favorite.name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                            <h3> Favorite Items </h3>
+                        <ul>
+                            {% for favorite in item_favorite_list %}
+                                <li>
+                                    <p><a href="{{ url_for('.item_details', category_id=favorite.category_id, item_id=favorite.id) }}">
+                                                {{ favorite.name }}</a></p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+<!-- End of the right sidebar -->
+        </div>
+    </div>
+
+
+<!-- End of the Main Content -->
+<!-- Start of the Footer -->
+    <footer class="navbar navbar-fixed-bottom navbar-inverse">
+        <div class="container">
+            <a href="{{ url_for('main.privacy_statement') }}">Privacy Policy</a>
+        </div>
+    </footer>
+<!-- End of the footer -->
+{% endblock content %}
+
+<!-- Start of the scripts -->
+{% block scripts %}
+    {{ super() }}
+    <!-- Scriipt for the arrows that move the sidebar out and into view -->
+    <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+            if($('a span').hasClass('glyphicon-arrow-left'))
+            {
+                $('#menu-toggle').html('<span class="glyphicon glyphicon-arrow-right"></span>');
+            }
+            else
+            {
+                $('#menu-toggle').html('<span class="glyphicon glyphicon-arrow-left"></span>');
+            }
+        });
+
+        $("#menu-toggle-right").click(function(f) {
+            f.preventDefault();
+            $("#wrapper").toggleClass("toggledRight");
+            if($('a span').hasClass('glyphicon-arrow-right'))
+            {
+                $('#menu-toggle-right').html('<span class="glyphicon glyphicon-arrow-left"></span>');
+            }
+            else
+            {
+                $('#menu-toggle-right').html('<span class="glyphicon glyphicon-arrow-right"></span>');
+            }
+        });
+
+    </script>
+
+{% endblock scripts %}
+<!-- End of scripts -->
+<!-- End of documents -->

@@ -1,0 +1,68 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+
+    <div class="container" id="outershell">
+        <h2>Enter the names of the new categories.</h2>
+        <form class="form-horizontal" method="POST" action="{{ url_for('.add_five_categories', category_id=category.id) }}" name="name of categories">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                <label class="control-label col-sm-2" for="category1">
+                    {{ form.name1.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ form.name1 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category2">
+                    {{ form.name2.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ form.name2 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category3">
+                    {{ form.name3.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ form.name3 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category4">
+                    {{ form.name4.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ form.name4 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category5">
+                    {{ form.name5.label }}
+                </label>
+                <div class="col-sm-10">
+                    {{ form.name5 }}
+                </div>
+            </div>
+            {% if items %}
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="items">Move items to:</label>
+                    <div class="col-sm-10">
+                        {{ form.items_move }}
+                    </div>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Add</button>
+                </div>
+            </div>
+
+        </form>
+        <p>Parent Category will be {{ category.name }}</p>
+    </div>
+
+
+{% endblock content %}

@@ -1,0 +1,36 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block content %}
+    {{ super() }}
+    <div class="container">
+        <h2>Add a new item</h2>
+        <form class="form-horizontal" role="form" method="POST", action="", name="add item">
+            <div class="form-group">
+            {{ form.hidden_tag() }}
+                <label class="control-label col-sm-2" for="name">Item name:</label>
+            <div class="col-sm-10">
+                {{ form.item(size=120) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="category">Select a category:</label>
+            <div class="col-sm-10">
+            {{ form.category_id }}
+                </div>
+                </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="description">Give a description:</label>
+            <div class="col-sm-10">
+            {{ form.description }}
+                </div>
+                </div>
+            <div class="form-group">
+                <div class="col-lg-offset-2">
+                    <button type="submit" class="btn btn-default">Add</button>
+                </div>
+                </div>
+        </form>
+    </div>
+
+
+{% endblock content %}
