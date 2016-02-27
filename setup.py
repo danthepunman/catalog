@@ -12,8 +12,6 @@ manager = Manager(usage='Initial Setup')
 @manager.command
 def start_here():
     if prompt_bool('Is this the initial setup?'):
-        requirements()
-        print 'requirements done'
         database_setup()
         print 'database setup'
         edit_config()
@@ -28,15 +26,7 @@ def start_here():
     return
 
 
-@manager.command
-def requirements():
-    # Establish the root path on the operating system
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    # Change the working directory to the backup directory
-    os.chdir(basedir)
-    source_file = 'requirements.txt'
-    main(['install', '-r', source_file])
-    return
+
 
 
 @manager.command

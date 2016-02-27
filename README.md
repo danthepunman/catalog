@@ -13,8 +13,10 @@ Using the Flask framework this app creates a website of categories, items, comme
 ## Installation:
 
 - Clone the app from Github
-- 
-- From the commandline while in the apps root directory (contains setup.py and manage.py) run the setup.py file:
+- If you have the default pip from Ubuntu, it is faulty.  You need remove it with 'sudo apt-get purge python-pip' and install a new pip with 'sudo easy_install -U pip' [Reference](https://bugs.launchpad.net/ubuntu/+source/python-pip/+bug/1306991/comments/34)
+- From the commandline while in the apps root directory (contains setup.py and manage.py) run the requirements.py file.
+    - ~$ python requirements.py
+- From the commandline while in the same directory run the setup.py file:
     - ~$ python manage.py setup start_here
 - At the prompts:
     - Affirm if it is the first time running
