@@ -82,8 +82,8 @@ ul {padding-left: 5px;
 }
 
 #wrapper.toggled #page-content-wrapper {
-    position: absolute;
-    margin-right: 100px;
+    position: fixed;
+    margin-right: -100px;
 }
 
 #wrapper.toggledRight #page-content-wrapper {
@@ -170,13 +170,49 @@ ul {padding-left: 5px;
     #page-content-wrapper {
         padding: 20px;
         position: absolute;
-        width: inherit;
+        margin-right: -250px;
+        margin-left: -300px;
         height:auto;
+
     }
 
     #wrapper.toggled #page-content-wrapper {
         position: absolute;
-        margin-right: 0;
+        margin-left: -18%;
+        margin-right: -10%;
+        width: 85%;
+
+    }
+
+    #wrapper.toggledRight #page-content-wrapper {
+        position: absolute;
+        margin-left: -100px;
+        margin-right: -250px;
+        width: 87%;
+    }
+    #wrapper.toggled#wrapper.toggledRight #page-content-wrapper {
+        position: absolute;
+        width: 100%;
+        margin-left: -20%;
+    }
+    #wrapper.toggledRight div#wrapper.container {
+        padding-right: 0px;
+        width: 90%;
+        margin-left: 14%;
+    }
+
+    div#middle.container{
+
+    }
+    #wrapper.toggledRight div#middle.container{
+        margin-left: 0px;
+        width: 100%;
+        position: initial;
+    }
+    #wrapper.toggled div#middle.container{
+        margin-left: 0;
+        width: 100%;
+        position: initial;
     }
 }
 
