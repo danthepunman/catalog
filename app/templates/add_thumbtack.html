@@ -8,7 +8,7 @@
     {% if form %}
         <div class="container">
             <h1>Enter the info for the new thumbtack</h1>
-            <form class="form-horizontal"  method="POST" action="{{ url_for('.add_thumbtack_type', category_id=category.id) }}" name="add thumbtack">
+            <form class="form-horizontal"  method="POST" action="{{ url_for('.add_thumbtack', category_id=category.id, kind=kind) }}" name="add thumbtack">
                 <div class="form-group">
                     {{ form.hidden_tag() }}
                     <label class="control-label col-sm-2" for="enter_name">{{ form.name.label }}</label>
