@@ -587,7 +587,7 @@ def add_thumbtack(category_id, kind):
                            children=children, category=category,
                            category_favorite_list=category_favorite_list,
                            item_favorite_list=item_favorite_list,
-                           form=form)
+                           form=form, kind=kind)
 
 
 # If item was selected then this one will be used
