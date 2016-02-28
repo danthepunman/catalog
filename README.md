@@ -13,9 +13,9 @@ Using the Flask framework this app creates a website of categories, items, comme
 ## Installation:
 
 - Clone the app from Github
-- If you have the default pip from Ubuntu, it is faulty.  You need remove it with 'sudo apt-get purge python-pip' and install a new pip with 'sudo easy_install -U pip' [Reference](https://bugs.launchpad.net/ubuntu/+source/python-pip/+bug/1306991/comments/34)
-- From the commandline while in the apps root directory (contains setup.py and manage.py) run the requirements.py file.
-    - ~$ python requirements.py
+- From the commandline while in the apps root directory 'contains setup.py and manage.py' run the requirements.py file.
+    - ~$ sudo python requirements.py
+- If you get an error 'ImportError: cannot import name IncompleteRead', you may need to remove pip with 'sudo apt-get purge python-pip' and install a new pip with 'sudo easy_install -U pip' [Reference](https://bugs.launchpad.net/ubuntu/+source/python-pip/+bug/1306991/comments/34) I get the error with the vagrant setup but not on codeanywhere python container
 - From the commandline while in the same directory run the setup.py file:
     - ~$ python manage.py setup start_here
 - At the prompts:
@@ -39,7 +39,6 @@ Many operations can be done from the commandline.
     - With session.query you can perform searches on the database
 - ~$ python manage.py setup \<command\>
     - This first group of commands are done at the installation phase with the 'start_here' command
-    - Requirements = Runs the requirements file through pip install to verify that all packages are installed.
     - items_restored = Restores the items. After initial run, this feature should be done inside the web browser. There, it checks if items already exists inside the category.
     - edit_config = Will ask for the admin email and amazon id and key. 
     - client_secrets = Will ask for the Google id and secret key but will only work if the phrase 'need_key' is in those spots in client_secrets.json
@@ -75,9 +74,9 @@ To add items:
 - First retrieve an item number (ASIN) from the Amazon Website that matches the categories topic.
 - When the admin selects the link to add items, the form will ask for the ASIN, Search Index that the item falls under, and the name of the category is inserted as the keywords.  The admin can adjust the keywords if needed.  I have found that adding the parent category helps narrow down the search.
 - The next page will give ten items. If they match the category, accept the node. If the admin declines it will refresh the first form and ask that the admin enter a different ASIN or change the keywords.
-- This will bring up the items again with a picture. If an item does not belong, the admin can select 'Remove Item' and it will be removed.
+- When the node is accepted, the next page will bring up the items again with a picture. If an item does not belong, the admin can select 'Remove Item' and it will be removed.
 - If there are more items available for the current search, the admin can select the page number at the bottom of the page.
-- Once the admin is done retrieving items, select the category name at the top.  It will take the admin to the catalog where the items can be viewed in the in the catalog.
+- Once the admin is done retrieving items, select the category name at the top.  It will take the admin to the catalog where the items can be viewed in the catalog.
 - If the admin selects to add items in a category that has already has items, it will give the admin the option to reuse the node and search that is saved in the database.
 - One of the quick links at the top of the admin page is 'Amazon Searches'. It will give the admin a page of all the Amazon nodes and searches in the database. You can reuse them or delete them.
 - Since the info is from Amazon and part of the API agreement, it cannot be altered.
