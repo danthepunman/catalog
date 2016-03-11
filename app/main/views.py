@@ -1,6 +1,7 @@
 import json
 import random
 import string
+from collections import defaultdict
 from datetime import datetime
 from xml.dom import minidom
 import httplib2
@@ -285,6 +286,19 @@ def catalog():
     return render_template('./catalog.html', child_of_root=child_of_root)
 
 
+# Guide on how JSON can be called
+@main.route('/catalog/JSON_guide')
+def json_guide():
+    return render_template('json_guide.html')
+
+
+# Allows for a json response of all categories in the catalog
+@main.route('/catalog/JSON')
+def catalog_json():
+    categories = session.query(Categories).all()
+    return jsonify(Items=[i.serialize for i in categories])
+
+
 # Page for a category selected
 @main.route('/catalog/category/<int:category_id>/')
 def catalog_category(category_id):
@@ -353,7 +367,6 @@ def catalog_items_json(category_id):
     return jsonify(Items=[i.serialize for i in items])
 
 
-
 @main.route('/catalog/category/<int:category_id>/item/<int:item_id>')
 def item_details(category_id, item_id):
     # Get the details of the item
@@ -373,6 +386,13 @@ def item_details(category_id, item_id):
                            father=father, parent_list=parent_list, parent=parent,
                            category=category, category_favorite_list=category_favorite_list,
                            item_favorite_list=item_favorite_list, comments=comments)
+
+
+@main.route('/catalog/category/<int:category_id>/item/<int:item_id>/JSON')
+def catalog_single_item_json(category_id, item_id):
+    item = session.query(Items).filter_by(id=item_id).first()
+    print item.serialize
+    return jsonify(Items=[item.serialize])
 
 
 # This inverses the state of whether the user likes an item or not
@@ -491,6 +511,20 @@ def delete_comment(item_id, comment_id):
                            item=item)
 
 
+# Show all comments
+@main.route('/catalog/comments/JSON')
+def comments_json():
+    comments = session.query(Comments).all()
+    return jsonify(Items=[i.serialize for i in comments])
+
+
+# Comments for an item
+@main.route('/catalog/item/<int:item_id>/comments/JSON')
+def item_comments_json(item_id):
+    comments = session.query(Comments).filter_by(item=item_id).all()
+    return jsonify(Items=[i.serialize for i in comments])
+
+
 # File uploads not implemented.
 # In the future it could be incorporated into the comments or the thumbtacks
 # def allowed_file(filename):
@@ -512,6 +546,13 @@ def get_user():
 def profile(user_id):
     user = session.query(Users).filter_by(id=user_id).first()
     return render_template('profile.html', user=user)
+
+
+# Public version of all users
+@main.route('/profile/users/JSON')
+def users_public_json():
+    users = session.query(Users).all()
+    return jsonify(Items=[i.public_serialize for i in users])
 
 
 # Allows user to favorite or unfavored a category
@@ -560,7 +601,7 @@ def add_thumbtack_type(category_id):
 
 
 # If category or idea was selected for thumbtack type then this function is used
-@main.route('/catalog/category/<int:category_id>/kind/<kind>/add/', methods=['GET', 'POST'])
+@main.route('/catalog/category/<int:category_id>/kind/<string:kind>', methods=['GET', 'POST'])
 def add_thumbtack(category_id, kind):
     # Left sidebar
     child_of_root, father, parent_list, parent, children, category = sidebar(category_id)
@@ -568,7 +609,7 @@ def add_thumbtack(category_id, kind):
     category_favorite_list, item_favorite_list = right_sidebar()
     form = AddThumbtack()
     # Apply the kind to the form
-    form.kind.data = kind
+    form.kind.default = kind
     if form.validate_on_submit():
         # Create a thumbtack object
         new_thumbtack = Thumbtacks(name=form.name.data,
@@ -587,7 +628,7 @@ def add_thumbtack(category_id, kind):
                            children=children, category=category,
                            category_favorite_list=category_favorite_list,
                            item_favorite_list=item_favorite_list,
-                           form=form, kind=kind)
+                           form=form)
 
 
 # If item was selected then this one will be used
@@ -792,6 +833,20 @@ def delete_thumbtack(category_id, thumbtack_id):
                            children=children, category=category,
                            category_favorite_list=category_favorite_list,
                            item_favorite_list=item_favorite_list, thumbtack=thumbtack)
+
+
+# Show all thumbtacks
+@main.route('/catalog/thumbtacks/JSON')
+def thumbtacks_json():
+    thumbtacks = session.query(Thumbtacks).all()
+    return jsonify(Items=[i.serialize for i in thumbtacks])
+
+
+# Thumbtacks for a category
+@main.route('/catalog/category/<int:category_id>/thumbtacks/JSON')
+def category_thumbtacks_json(category_id):
+    thumbtacks = session.query(Thumbtacks).filter_by(category=category_id).all()
+    return jsonify(Items=[i.serialize for i in thumbtacks])
 
 
 # Privacy statement was generated when I was trying to implement the amazon oauth.

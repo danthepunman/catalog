@@ -1,0 +1,117 @@
+{% extends "catalog.html" %}
+
+{% block upper %}
+{{ super() }}
+<div class="container" id="outershell">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h1 class="panel-title">JSON Guide</h1>
+                </div>
+
+
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Scope</th>
+                        <th>Pattern</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+
+
+                    <tr>
+                        <td>Catalog</td>
+                        <td><a href="{{ url_for('.catalog_json') }}">/catalog/JSON</a></td>
+                    </tr>
+                    <tr>
+                        <td>Items in a Category</td>
+                        <td>/catalog/category/"category_id"/catalog_items/JSON</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Single Item</td>
+                        <td>/catalog/category/"category_id"/item/"item_id"/JSON</td>
+                    </tr>
+                    <tr>
+                        <td>All Thumbtacks</td>
+                        <td><a href="{{ url_for('.thumbtacks_json') }}">/catalog/thumbtacks/JSON</a></td>
+                    </tr>
+                    <tr>
+                        <td>Thumbtacks in a Category</td>
+                        <td>/catalog/category/"category_id"/thumbtacks/JSON</td>
+                    </tr>
+                    <tr>
+                        <td>All Comments</td>
+                        <td><a href="{{ url_for('.comments_json') }}">/catalog/comments/JSON</a></td>
+                    </tr>
+                    <tr>
+                        <td>Comments for an Item</td>
+                        <td>/catalog/item/"item_id"/comments/JSON</td>
+                    </tr>
+                    <tr>
+                        <td>All Users</td>
+                        <td><a href="{{ url_for('.users_public_json') }}">/profile/users/JSON</a></td>
+                    </tr>
+                    {% if current_user.is_admin %}
+                        <tr>
+                            <td>All Users</td>
+                            <td><a href="{{ url_for('admin.users_all_json') }}">/admin/users/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Categories</td>
+                            <td><a href="{{ url_for('admin.favorite_categories_json') }}">/admin/favorite_categories/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Categories by Category</td>
+                            <td>/admin/favorite_categories/category/"category_id"/JSON</td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Categories by User</td>
+                            <td>/admin/favorite_categories/user/"user_id"/JSON</td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Items</td>
+                            <td><a href="{{ url_for('admin.favorite_items_json') }}">/admin/favorite_items/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Items by Item </td>
+                            <td>/admin/favorite_items/items/"item_id"/JSON</td>
+                        </tr>
+                        <tr>
+                            <td>Favorite Items by User</td>
+                            <td>/admin/favorite_items/user/"user_id"/JSON</td>
+                        </tr>
+                        <tr>
+                            <td>Category Nodes</td>
+                            <td><a href="{{ url_for('admin.category_node_json') }}">/admin/category_nodes/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Searches</td>
+                            <td><a href="{{ url_for('admin.amazon_searches_json') }}">/admin/amazon_searches/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Search Indices</td>
+                            <td><a href="{{ url_for('admin.amazon_search_indices_json') }}">/admin/amazon_search_indices/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Returned Items</td>
+                            <td><a href="{{ url_for('admin.amazon_returned_items_json') }}">/admin/amazon_returned_items/JSON</a></td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Returned Items by Amazon Search</td>
+                            <td>/admin/amazon_returned_items/amazon_search/"amazon_search_id"/JSON</td>
+                        </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <p>*** Note: Requests filtered (e.g. Category) then in the url pattern replace the quoted part with an id</p>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -60,7 +60,7 @@ Many operations can be done from the commandline.
 
 ### Admin
 
-The admin has a lot options and can get a pulse of the site from the admin's home page.  The admin's navigation bar has links to categories and items. These pages includes all of them in the database. The first section includes quick links to many operations. The next section gives an overview of site by numbers.  It's broken down to categories, items, users, comments and thumbtacks.
+The admin has a lot options and can get a pulse of the site from the admin's home page.  The admin's navigation bar has links to categories, items, and users. These pages includes all of them in the database. The first section includes quick links to many operations. The next section gives an overview of site by the numbers.  It's broken down to categories, items, users, comments and thumbtacks.
 
 ### Categories
 
@@ -92,7 +92,7 @@ To add items:
 
 - Users can comment on items.
 - They can edit and delete their own comments.
-- The admin has a link that shows all the comments that need to be reviewed.  If they are found inappropriate, they can be deleted. If the admin selects approve, it flags it in the database and removes it from the list.
+- The admin has a link that shows all the comments that need to be reviewed.  If they are found inappropriate, they can be deleted. If the admin selects approve, it flags it in the database and removes it from the review list.
 - The admin also has a dashboard that shows the category name next to the comment to get a snapshot that comments are staying on topic.
 
 ### Thumbtacks

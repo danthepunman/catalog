@@ -14,7 +14,6 @@ __author__ = 'Daniel'
 class Categories(Base):
     __tablename__ = 'categories'
     id = Column(Integer, primary_key=True)
-    # Creates the foreign key for the parent of the category
     parent_id = Column(Integer, ForeignKey(id))
     name = Column(String, nullable=False)
     children = relationship('Categories',
@@ -24,12 +23,10 @@ class Categories(Base):
                             )
     thumbtack = relationship('Thumbtacks', backref='categories')
 
-    # Object initiation
     def __init__(self, name, parent_id=None):
         self.name = name
         self.parent_id = parent_id
 
-    # Object representation
     def __repr__(self):
         return 'Categories(name=%r, id=%r, parent_id=%r)' % (
             self.name,
@@ -37,16 +34,38 @@ class Categories(Base):
             self.parent_id
         )
 
-    # A way to present the tree with indentation
     def dump(self, _indent=0):
         return "    " * _indent + repr(self) + "\n" + "".join([c.dump(_indent + 1)
                                                                for c in self.children.values()])
 
-    # Gets the parents name
     @property
     def parents_name(self):
         parent = session.query(Categories).filter_by(id=self.parent_id).first()
         return parent.name
+
+    @property
+    def serialize(self):
+        parent = session.query(Categories).filter_by(id=self.parent_id).first()
+        if parent:
+            parent_name = parent.name
+        else:
+            parent_name = None
+        children = {}
+        i = 1
+        category_children = session.query(Categories).filter_by(parent_id=self.id).all()
+        if category_children:
+            for child in category_children:
+                children['Child%i' % i] = {}
+                children['Child%i' % i]['Name'] = child.name
+                children['Child%i' % i]['ID'] = child.id
+                i += 1
+        return {
+            "Name":         self.name,
+            "ID":           self.id,
+            "Parent's Name":  parent_name,
+            "Parent's ID":  self.parent_id,
+            "Sub-Categories":     children
+        }
 
 
 # Items
@@ -68,7 +87,6 @@ class Items(Base):
     comments = relationship('Comments', backref='items')
     created_by = Column(Enum('Category', 'Thumbtack'))
 
-    # Object initiation
     def __init__(self, asin, name, category_id, description, created_by):
         self.asin = asin
         self.name = name
@@ -106,7 +124,9 @@ class Items(Base):
     @property
     def serialize(self):
         return {
+            "ID": self.id,
             "Name":     self.name,
+            "ASIN": self.asin,
             "Description":  self.description,
             "Small Image":  self.small_image,
             "Medium Image":     self.medium_image,
@@ -138,21 +158,133 @@ class Items(Base):
 class Users(UserMixin, Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    social = Column(String(64), nullable=False, unique=True)
-    nickname = Column(String(64), nullable=False)
-    email = Column(String(64), nullable=True)
+    social = Column(String, nullable=False, unique=True)
+    nickname = Column(String, nullable=False)
+    email = Column(String, nullable=True)
     picture = Column(String)
     favorites_categories = relationship('FavoritesCategories', backref='users')
     favorites_item = relationship('FavoriteItems', backref='users')
     comments = relationship('Comments', backref='users')
     thumbtack = relationship('Thumbtacks', backref='users')
 
-    # Object initiation
     def __init__(self, social, nickname, email, picture):
         self.social = social
         self.nickname = nickname
         self.email = email
         self.picture = picture
+
+    @property
+    def admin_serialize(self):
+        fav_categories = []
+        for favorite in session.query(FavoritesCategories).filter_by(user=self.id).all():
+            category = session.query(Categories).filter_by(id=favorite.category).first()
+            fav_categories.append(category)
+        favorite_categories = {}
+        cat = 1
+        if fav_categories:
+            for favorite in fav_categories:
+                favorite_categories['Category%i' % cat] = favorite.name
+                cat += 1
+        fav_items = []
+        for favorite in session.query(FavoriteItems).filter_by(user=self.id).all():
+            item = session.query(Items).filter_by(id=favorite.item).first()
+            fav_items.append(item)
+        favorite_items = {}
+        it = 1
+        if fav_items:
+            for favorite in fav_items:
+                favorite_items["Item%i" % it] = {}
+                favorite_items["Item%i" % it]["Name"] = favorite.name
+                favorite_items["Item%i" % it]["Category"] = favorite.category.name
+                favorite_items["Item%i" % it]["Brand"] = favorite.brand
+                it += 1
+        comments = session.query(Comments).filter_by(user=self.id).all()
+        user_comments = {}
+        com = 1
+        if comments:
+            for comment in comments:
+                user_comments["Comment%i" % com] = {}
+                user_comments["Comment%i" % com]["Title"] = comment.title
+                user_comments["Comment%i" % com]["Comment"] = comment.comment
+                user_comments["Comment%i" % com]["Item"] = comment.item.name
+                com += 1
+        thumbtacks = session.query(Thumbtacks).filter_by(user=self.id).all()
+        user_thumbtacks = {}
+        thum = 1
+        if thumbtacks:
+            for thumb in thumbtacks:
+                user_thumbtacks['Thumbtack%i' % thum] = {}
+                user_thumbtacks['Thumbtack%i' % thum]['Kind'] = thumb.kind
+                user_thumbtacks['Thumbtack%i' % thum]['Name'] = thumb.name
+                user_thumbtacks['Thumbtack%i' % thum]['Category'] = thumb.category.name
+                user_thumbtacks['Thumbtack%i' % thum]['Description'] = thumb.description
+                thum += 1
+        return {
+            'ID': self.id,
+            'Name': self.nickname,
+            'Email': self.email,
+            'Picture': self.picture,
+            'Favorite Categories': favorite_categories,
+            'Favorite Items': favorite_items,
+            'Comments': user_comments,
+            'Thumbtacks': user_thumbtacks
+        }
+
+    @property
+    def public_serialize(self):
+        fav_categories = []
+        for favorite in session.query(FavoritesCategories).filter_by(user=self.id).all():
+            category = session.query(Categories).filter_by(id=favorite.category).first()
+            fav_categories.append(category)
+        favorite_categories = {}
+        cat = 1
+        if fav_categories:
+            for favorite in fav_categories:
+                favorite_categories['Category%i' % cat] = favorite.name
+                cat += 1
+        fav_items = []
+        for favorite in session.query(FavoriteItems).filter_by(user=self.id).all():
+            item = session.query(Items).filter_by(id=favorite.item).first()
+            fav_items.append(item)
+        favorite_items = {}
+        it = 1
+        if fav_items:
+            for favorite in fav_items:
+                favorite_items["Item%i" % it] = {}
+                favorite_items["Item%i" % it]["Name"] = favorite.name
+                favorite_items["Item%i" % it]["Category"] = favorite.category.name
+                favorite_items["Item%i" % it]["Brand"] = favorite.brand
+                it += 1
+        comments = session.query(Comments).filter_by(user=self.id).all()
+        user_comments = {}
+        com = 1
+        if comments:
+            for comment in comments:
+                user_comments["Comment%i" % com] = {}
+                user_comments["Comment%i" % com]["Title"] = comment.title
+                user_comments["Comment%i" % com]["Comment"] = comment.comment
+                user_comments["Comment%i" % com]["Item"] = comment.item.name
+                com += 1
+        thumbtacks = session.query(Thumbtacks).filter_by(user=self.id).all()
+        user_thumbtacks = {}
+        thum = 1
+        if thumbtacks:
+            for thumb in thumbtacks:
+                user_thumbtacks['Thumbtack%i' % thum] = {}
+                user_thumbtacks['Thumbtack%i' % thum]['Kind'] = thumb.kind
+                user_thumbtacks['Thumbtack%i' % thum]['Name'] = thumb.name
+                user_thumbtacks['Thumbtack%i' % thum]['Category'] = thumb.category.name
+                user_thumbtacks['Thumbtack%i' % thum]['Description'] = thumb.description
+                thum += 1
+        return {
+            'ID': self.id,
+            'Name': self.nickname,
+            'Picture': self.picture,
+            'Favorite Categories': favorite_categories,
+            'Favorite Items': favorite_items,
+            'Comments': user_comments,
+            'Thumbtacks': user_thumbtacks
+        }
 
     @property
     def is_authenticated(self):
@@ -172,7 +304,6 @@ class Users(UserMixin, Base):
         except NameError:
             return str(self.id)
 
-    # Object representation
     def __repr__(self):
         return '<User %r>' % self.nickname
 
@@ -193,16 +324,17 @@ class FavoritesCategories(Base):
     category_relation = relationship('Categories',
                                      backref='favoritescategories')
 
-    # Object initiation
     def __init__(self, user, category):
         self.user = user
         self.category = category
 
-    # Object representation
-    def __repr__(self):
-        user_obj = session.query(Users).filter_by(id=self.user).first()
-        category_obj = session.query(Categories).filter_by(id=self.category).first()
-        return '<User %r likes %r>' % (user_obj.nickname, category_obj.name)
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'User': self.user.nickname,
+            'Category': self.category.name
+        }
 
 
 # Favorite Items
@@ -212,16 +344,17 @@ class FavoriteItems(Base):
     user = Column(Integer, ForeignKey('users.id'))
     item = Column(Integer, ForeignKey('items.id'))
 
-    # Object initiation
     def __init__(self, user, item):
         self.user = user
         self.item = item
 
-    # Object representation
-    def __repr__(self):
-        user_obj = session.query(Users).filter_by(id=self.user).first()
-        item_obj = session.query(Items).filter_by(id=self.item).first()
-        return '<User %r likes %r>' % (user_obj.nickname, item_obj.name)
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'User': self.user.nickname,
+            'Item': self.item.name
+        }
 
 
 # Comments on Items
@@ -235,7 +368,6 @@ class Comments(Base):
     time = Column(DATETIME)
     admin_screened = Column(Boolean, default=False)
 
-    # Object initiation
     def __init__(self, user, item, title, comment, time):
         self.user = user
         self.item = item
@@ -243,24 +375,31 @@ class Comments(Base):
         self.comment = comment
         self.time = time
 
-    # Object representation
-    def __repr__(self):
-        return '<%r>' % self.title
-
     @property
     def user_name(self):
         user_name = session.query(Users).filter_by(id=self.user).first()
         return user_name.nickname
 
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'User': self.user.nickname,
+            'Item': self.item.name,
+            'Title': self.title,
+            'Comment': self.comment,
+            'Time': self.time
+        }
+
 
 # Amazon API
 # Nodes
-class CategoriesNode(Base):
-    __tablename__ = 'categoriesnode'
+class CategoryNodes(Base):
+    __tablename__ = 'categorynodes'
     id = Column(Integer, primary_key=True)
     category = Column(Integer, ForeignKey('categories.id'))
     category_relation = relationship('Categories',
-                                     backref='categories_node')
+                                     backref='category_nodes')
     amazon_node = Column(String)
     search_index = Column(String)
     keywords = Column(String)
@@ -269,36 +408,39 @@ class CategoriesNode(Base):
     def is_good_match(self):
         return True
 
-    # Object initiation
     def __init__(self, category, amazon_node, search_index, keywords):
         self.category = category
         self.amazon_node = amazon_node
         self.search_index = search_index
         self.keywords = keywords
 
-    # Object representation
-    def __repr__(self):
-        category_obj = session.query(Categories).filter_by(id=self.category).first()
-        return '<Category: %r, Node: %r, Search Index: %r>' % (category_obj.name, self.amazon_node, self.search_index)
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'Category': self.category.name,
+            'Amazon Node': self.amazon_node,
+            'Search Index': self.search_index.search_index,
+            'Keywords': self.keywords,
+        }
 
 
 # Amazon Search
-class AmazonSearch(Base):
-    __tablename__ = 'amazonsearch'
+class AmazonSearches(Base):
+    __tablename__ = 'amazonsearches'
     id = Column(Integer, primary_key=True)
     category = Column(Integer, ForeignKey('categories.id'))
     category_relation = relationship('Categories',
-                                     backref='amazonsearch')
-    keyword = Column(String(64), nullable=False)
-    search_index = Column(String(64), nullable=False)
-    sort = Column(String(64), nullable=False)
-    amazon_node = Column(Integer, ForeignKey('categoriesnode.id'))
-    node_relation = relationship('CategoriesNode',
-                                 backref='amazonsearch')
-    response_group = Column(String(64))
+                                     backref='amazonsearches')
+    keyword = Column(String, nullable=False)
+    search_index = Column(String, nullable=False)
+    sort = Column(String, nullable=False)
+    amazon_node = Column(Integer, ForeignKey('categorynodes.id'))
+    node_relation = relationship('CategoryNodes',
+                                 backref='amazonsearches')
+    response_group = Column(String)
     max_pages = Column(Integer)
 
-    # Object initiation
     def __init__(self, category, keyword, search_index, sort, amazon_node, response_group):
         self.category = category
         self.keyword = keyword
@@ -307,47 +449,62 @@ class AmazonSearch(Base):
         self.amazon_node = amazon_node
         self.response_group = response_group
 
-    # Object representation
-    def __repr__(self):
-        category_obj = session.query(Categories).filter_by(id=self.category).first()
-        return '<Category: %r, Keywords: %r, Node: %r, Search Index: %r>' % (category_obj.name, self.keyword, self.amazon_node, self.search_index)
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'Category': self.category.name,
+            'Amazon Node': self.amazon_node.amazon_node,
+            'Search Index': self.search_index.search_index,
+            'Keywords': self.keyword,
+            'Sort': self.sort,
+            'Response_group': self.response_group,
+            'Maximum Page Results': self.max_pages
+        }
 
 
 # Amazon Search Index List
 class AmazonSearchIndex(Base):
     __tablename__ = 'amazonsearchindex'
     id = Column(Integer, primary_key=True)
-    search_index = Column(String(64))
+    search_index = Column(String)
 
-    # Object initiation
     def __init__(self, search_index):
         self.search_index = search_index
 
-    def __repr__(self):
-        return '<%r>' % self.search_index
+    @property
+    def serialize(self):
+        return {
+            "Search Index Id": self.id,
+            "Search Index": self.search_index
+        }
 
 
 # Amazon Returned Items from search
 class AmazonReturnedItems(Base):
     __tablename__ = 'amazonreturneditems'
     id = Column(Integer, primary_key=True)
-    amazonsearch_id = Column(Integer, ForeignKey('amazonsearch.id'))
-    search_relation = relationship('AmazonSearch',
+    amazon_search = Column(Integer, ForeignKey('amazonsearches.id'))
+    search_relation = relationship('AmazonSearches',
                                    backref='amazonreturneditems')
-    asin = Column(String(32))
+    asin = Column(String)
     page = Column(Integer)
     is_acceptable = Column(Boolean, default=True)
 
-    # Object initiation
     def __init__(self, amazonsearch_id, asin, page):
         self.amazonsearch_id = amazonsearch_id
         self.asin = asin
         self.page = page
 
-    # Object representation
-    def __repr__(self):
-        category_obj = session.query(Categories).filter_by(id=self.category).first()
-        return '<Search id: %r, asin: %r, page: %r>' % (self.amazonsearch_id, self.asin, self.page)
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'Amazon Search Id': self.amazonsearch_id,
+            'ASIN': self.asin,
+            'Page': self.page,
+            'Acceptable': self.is_acceptable
+        }
 
 
 class Thumbtacks(Base):
@@ -362,7 +519,6 @@ class Thumbtacks(Base):
     image = Column(String)
     admin_screened = Column(Boolean, default=False)
 
-    # Object initiation
     def __init__(self, name, kind, user, category, description):
         self.name = name
         self.kind = kind
@@ -370,10 +526,19 @@ class Thumbtacks(Base):
         self.category = category
         self.description = description
 
-    def __repr__(self):
-        return '<%r>' % self.name
-
     @property
     def user_name(self):
         user_name = session.query(Users).filter_by(id=self.user).first()
         return user_name.nickname
+
+    @property
+    def serialize(self):
+        return {
+            'ID': self.id,
+            'Name': self.name,
+            'Kind': self.kind,
+            'Creator': self.user.nickname,
+            'Category': self.category.name,
+            'Category ID': self.category,
+            'Description': self.description
+        }

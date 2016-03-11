@@ -1,9 +1,10 @@
 import ast
 import os
+import re
 from xml.dom import minidom
 import httplib2
 
-from flask import render_template, redirect, request, url_for, flash, g
+from flask import render_template, redirect, jsonify, request, url_for, flash, g
 from flask.ext.login import current_user
 from sqlalchemy import desc
 from sqlalchemy.sql import func
@@ -16,8 +17,8 @@ from .. import lm
 from ..amazon_api import AmazonASINCheck, AmazonNodeSearch, AmazonItemsSearch
 from ..database import session, create_categories, empty_db
 
-from ..models import Categories, Items, Users, AmazonSearch, FavoritesCategories
-from ..models import CategoriesNode, AmazonSearchIndex, AmazonReturnedItems
+from ..models import Categories, Items, Users, AmazonSearches, FavoritesCategories
+from ..models import CategoryNodes, AmazonSearchIndex, AmazonReturnedItems
 from ..models import FavoriteItems, Comments, Thumbtacks
 
 # variable used in parsing Amazon API response with minidom
@@ -41,6 +42,7 @@ def get_data(parent, tag):
 # Adds context to redirect back to the page that sent the request
 def redirect_url(default='.admin_index'):
     return request.args.get('next') or request.referrer or url_for(default)
+
 
 # Gets the current users id from the database
 @lm.user_loader
@@ -473,14 +475,14 @@ def amazon_searches():
     # A dashboard of all the previous searches so the Admin can reuse them
     node_list = []
     # Get all the node searches in the database
-    node_searches = session.query(CategoriesNode).all()
+    node_searches = session.query(CategoryNodes).all()
     for node in node_searches:
         # Get the category that node search is for
         category = session.query(Categories).filter_by(id=node.category).first()
         node_list.append((node, category))
     search_list = []
     # Get the amazon searches
-    amazon_search = session.query(AmazonSearch).all()
+    amazon_search = session.query(AmazonSearches).all()
     for search in amazon_search:
         category = session.query(Categories).filter_by(id=search.category).first()
         search_list.append((search, category))
@@ -491,7 +493,7 @@ def amazon_searches():
 # Admin can delete a node if it is irrelevant to the category
 @admin.route('/amazon/node/<int:amazon_node_id>/delete')
 def amazon_node_delete(amazon_node_id):
-    node = session.query(CategoriesNode).filter_by(id=amazon_node_id).first()
+    node = session.query(CategoryNodes).filter_by(id=amazon_node_id).first()
     session.delete(node)
     session.commit()
     return redirect(redirect_url())
@@ -500,7 +502,7 @@ def amazon_node_delete(amazon_node_id):
 # Admin can delete the search if it is getting the wrong items
 @admin.route('/amazon/search/<int:amazon_search_id>/delete')
 def amazon_search_delete(amazon_search_id):
-    search = session.query(AmazonSearch).filter_by(id=amazon_search_id).first()
+    search = session.query(AmazonSearches).filter_by(id=amazon_search_id).first()
     session.delete(search)
     session.commit()
     return redirect(redirect_url())
@@ -514,10 +516,10 @@ def amazon_node_search(category_id):
     previous_searches = []
     # Check for previous nodes and searches for this category
     # If so give the admin the option to reuse the search
-    previous_nodes = session.query(CategoriesNode).filter_by(category=category_id).all()
+    previous_nodes = session.query(CategoryNodes).filter_by(category=category_id).all()
     if previous_nodes:
         for node in previous_nodes:
-            searches = session.query(AmazonSearch).filter_by(amazon_node=node.id).all()
+            searches = session.query(AmazonSearches).filter_by(amazon_node=node.id).all()
             for search in searches:
                 previous_searches.append((node, search))
 
@@ -535,10 +537,10 @@ def amazon_node_search(category_id):
         search_index = session.query(AmazonSearchIndex).filter_by(id=form.search_index.data).one()
         keywords = form.keywords.data
         # Check if parameters have been used before
-        test_amazon_node_search = session.query(CategoriesNode.id).\
-            filter(CategoriesNode.category == category_id,
-                   CategoriesNode.keywords == keywords,
-                   CategoriesNode.search_index == search_index.search_index).first()
+        test_amazon_node_search = session.query(CategoryNodes.id).\
+            filter(CategoryNodes.category == category_id,
+                   CategoryNodes.keywords == keywords,
+                   CategoryNodes.search_index == search_index.search_index).first()
         if test_amazon_node_search:
             return redirect(url_for('.amazon_node_check', category_id=category_id,
                                     browse_node=test_amazon_node_search[0]))
@@ -563,7 +565,7 @@ def amazon_node_search(category_id):
                 browse_node = get_data(dom, 'BrowseNodeId')
                 print browse_node
                 # The node is stored in the database for further use.
-                c_node = CategoriesNode(category_id, browse_node, search_index.search_index, keywords)
+                c_node = CategoryNodes(category_id, browse_node, search_index.search_index, keywords)
                 session.add(c_node)
                 session.commit()
 
@@ -588,16 +590,16 @@ def amazon_node_check(category_id, browse_node):
     # Establish the variable outside of the if statement
     amazon_search_id = None
     # Get the node that was stored in the database on previous request
-    node = session.query(CategoriesNode).filter_by(id=browse_node).first()
+    node = session.query(CategoryNodes).filter_by(id=browse_node).first()
     # Check the database to see if this search has been done before
-    test_amazon_search = session.query(AmazonSearch.id).filter(AmazonSearch.keyword == node.keywords,
-                                                               AmazonSearch.category == category_id,
-                                                               AmazonSearch.search_index == node.search_index,
-                                                               AmazonSearch.amazon_node == node.id).first()
+    test_amazon_search = session.query(AmazonSearches.id).filter(AmazonSearches.keyword == node.keywords,
+                                                                 AmazonSearches.category == category_id,
+                                                                 AmazonSearches.search_index == node.search_index,
+                                                                 AmazonSearches.amazon_node == node.id).first()
     print test_amazon_search, node.keywords, node.keywords, category_id, node.search_index, browse_node
     if test_amazon_search:
         items_list = []
-        old_search = session.query(AmazonSearch).filter_by(id=test_amazon_search[0]).first()
+        old_search = session.query(AmazonSearches).filter_by(id=test_amazon_search[0]).first()
         items = old_search.amazonreturneditems[:10]
         for item in items:
             old_item = session.query(Items).filter_by(asin=item.asin).first()
@@ -610,7 +612,7 @@ def amazon_node_check(category_id, browse_node):
                                         amazon_search_id=old_search.id))
             else:
                 # In the database mark the node as being a bad match
-                bad_node = session.query(CategoriesNode) \
+                bad_node = session.query(CategoryNodes) \
                     .filter_by(id=browse_node).first()
                 bad_node.good_match = False
                 session.add(bad_node)
@@ -622,12 +624,12 @@ def amazon_node_check(category_id, browse_node):
 
     else:
         # If it hasn't then store it in the database
-        new_search = AmazonSearch(category=category_id, keyword=node.keywords, search_index=node.search_index,
-                                  sort='salesrank', amazon_node=node.id, response_group='Images,ItemAttributes')
+        new_search = AmazonSearches(category=category_id, keyword=node.keywords, search_index=node.search_index,
+                                    sort='salesrank', amazon_node=node.id, response_group='Images,ItemAttributes')
         session.add(new_search)
         session.commit()
         print new_search.id
-        amazon_fresh_search = session.query(AmazonSearch).filter_by(id=new_search.id).first()
+        amazon_fresh_search = session.query(AmazonSearches).filter_by(id=new_search.id).first()
         print amazon_fresh_search
         # Set up the Amazon request using the amazon_api module
         node_test = AmazonItemsSearch(node.amazon_node, node.search_index, node.keywords, page)
@@ -786,7 +788,7 @@ def amazon_node_check(category_id, browse_node):
                                     amazon_search_id=amazon_fresh_search.id))
         else:
             # In the database mark the node as being a bad match
-            bad_node = session.query(CategoriesNode) \
+            bad_node = session.query(CategoryNodes) \
                 .filter_by(id=browse_node).first()
             bad_node.good_match = False
             session.add(bad_node)
@@ -803,7 +805,7 @@ def amazon_node_check(category_id, browse_node):
 @admin.route('/amazon/items/category_id/<int:category_id>/search_id/<int:amazon_search_id>/add')
 def amazon_add_items(category_id, amazon_search_id):
     # Retrieves the search
-    search = session.query(AmazonSearch).filter_by(id=amazon_search_id).first()
+    search = session.query(AmazonSearches).filter_by(id=amazon_search_id).first()
     # Gets the current category
     category = session.query(Categories).filter_by(id=category_id).one()
     # Gets all the items under that search. 'page=None' gets the ones returned on the node check
@@ -824,7 +826,7 @@ def amazon_add_items(category_id, amazon_search_id):
 @admin.route('/amazon/items/category_id/<int:category_id>/search_id/<int:amazon_search_id>/add/page/<int:page>')
 def amazon_extra_items(category_id, amazon_search_id, page):
     # Gets the details of the search
-    search = session.query(AmazonSearch).filter_by(id=amazon_search_id).first()
+    search = session.query(AmazonSearches).filter_by(id=amazon_search_id).first()
 
     # Gets the current category
     category = session.query(Categories).filter_by(id=category_id).one()
@@ -990,7 +992,7 @@ def amazon_removed_items():
     items = session.query(AmazonReturnedItems).filter(is_acceptable=False).all()
     for item in items:
         # Gets the amazon search for that item
-        amazon_search = session.query(AmazonSearch).filter_by(id=item.amazonsearch_id).first()
+        amazon_search = session.query(AmazonSearches).filter_by(id=item.amazonsearch_id).first()
         # Gets the category that it was in.
         # The name is no longer in the system so the admin will have to do figure out which item
         # needs to be recovered using the asin
@@ -1003,7 +1005,7 @@ def amazon_removed_items():
 @admin.route('/amazon/items/item_recover/asin/<int:asin>/amazon_search/<int:amazon_search>', )
 def amazon_recover_item(amazon_search, asin):
     # We get the search to have category id
-    search = session.query(AmazonSearch).filter_by(id=amazon_search).first()
+    search = session.query(AmazonSearches).filter_by(id=amazon_search).first()
     # using the amazon api we setup a request for the single item
     recovered_item = AmazonASINCheck(asin=asin)
     # Convert the request to an url
@@ -1342,12 +1344,14 @@ def items_backup():
 def items_backup_category(category_id):
     # Query for the category
     category = session.query(Categories).filter_by(id=category_id).first()
+    # Take out all spaces and other characters that are not alpha_numeric
+    category_name = re.sub(r'[^\w]', '_', category.name)
     # Establish the root path on the operating system
     basedir = os.path.abspath(os.path.dirname(__file__))
     # Change the working directory to the backup directory
     os.chdir(basedir + "/Items_Backup")
     # Create a file with the name of the category
-    fo = open('items_database_export_%s.py' % category.name, 'w')
+    fo = open('items_database_export_%s.py' % category_name, 'w')
     # The string that the file starts with
     opening_string = '\nItems = [\n'
     # Write it to the file
@@ -1459,11 +1463,13 @@ def items_recover_category(category_id):
     # Get the category that the items are being recovered.
     category = session.query(Categories).filter_by(id=category_id).first()
     # Establish the root path on the operating system
+    # Take out all spaces and other characters that are not alpha_numeric
+    category_name = re.sub(r'[^\w]', '_', category.name)
     basedir = os.path.abspath(os.path.dirname(__file__))
     # Change the working directory to the backup directory
     os.chdir(basedir + "/Items_Backup")
     # Open the file that is being used in the recovery
-    with open('items_database_export_%s.py' % category.name) as f:
+    with open('items_database_export_%s.py' % category_name) as f:
         # iterate ove the lines of the file
         for lines in f:
             if lines.startswith('{'):
@@ -1486,4 +1492,91 @@ def items_recover_category(category_id):
                 session.commit()
 
     return redirect(redirect_url())
+
+
+# JSON for admin
+# All Users return in JSON format
+@admin.route('/users/JSON')
+def users_all_json():
+    users = session.query(Users).all()
+    return jsonify(Items=[i.admin_serialize for i in users])
+
+
+# JSON for favorite Categories
+@admin.route('/favorite_categories/JSON')
+def favorite_categories_json():
+    favorite_categories = session.query(FavoritesCategories).all()
+    return jsonify(Items=[i.serialize for i in favorite_categories])
+
+
+# JSON for favorite Categories by Category
+@admin.route('/favorite_categories/category/<int:category_id>/JSON')
+def favorite_categories_category_json(category_id):
+    favorite_categories = session.query(FavoritesCategories).filter_by(category=category_id).all()
+    return jsonify(Items=[i.serialize for i in favorite_categories])
+
+
+# JSON for favorite Categories by User
+@admin.route('/favorite_categories/user/<int:user_id>/JSON')
+def favorite_categories_user_json(user_id):
+    favorite_categories = session.query(FavoritesCategories).filter_by(user=user_id).all()
+    return jsonify(Items=[i.serialize for i in favorite_categories])
+
+
+# JSON for favorite Items
+@admin.route('/favorite_items/JSON')
+def favorite_items_json():
+    favorite_items = session.query(FavoriteItems).all()
+    return jsonify(Items=[i.serialize for i in favorite_items])
+
+
+# JSON for favorite Items by Item
+@admin.route('/favorite_items/items/<int:item_id>/JSON')
+def favorite_items_item_json(item_id):
+    favorite_items = session.query(FavoriteItems).filter_by(item=item_id).all()
+    return jsonify(Items=[i.serialize for i in favorite_items])
+
+
+# JSON for favorite Items by User
+@admin.route('/favorite_items/user/<int:user_id>/JSON')
+def favorite_items_user_json(user_id):
+    favorite_items = session.query(FavoriteItems).filter_by(user=user_id).all()
+    return jsonify(Items=[i.serialize for i in favorite_items])
+
+
+# JSON for Category Nodes
+@admin.route('/category_nodes/JSON')
+def category_node_json():
+    nodes = session.query(CategoryNodes).all()
+    return jsonify(Items=[i.serialize for i in nodes])
+
+
+# JSON for Amazon Searches
+@admin.route('/amazon_searches/JSON')
+def amazon_searches_json():
+    searches = session.query(AmazonSearches).all()
+    return jsonify(Items=[i.serialize for i in searches])
+
+
+# JSON for Amazon Search Indices
+@admin.route('/amazon_search_indices/JSON')
+def amazon_search_indices_json():
+    indices = session.query(AmazonSearchIndex).all()
+    return jsonify(Items=[i.serialize for i in indices])
+
+
+# JSON for Amazon Returned Items
+@admin.route('/amazon_returned_items/JSON')
+def amazon_returned_items_json():
+    items = session.query(AmazonReturnedItems).all()
+    return jsonify(Items=[i.serialize for i in items])
+
+
+# JSON for Amazon Returned Items by amazon_search
+@admin.route('/amazon_returned_items/amazon_search/<int:amazon_search_id>/JSON')
+def amazon_returned_items_search_json(amazon_search_id):
+    items = session.query(AmazonReturnedItems).filter_by(amazon_search=amazon_search_id).all()
+    return jsonify(Items=[i.serialize for i in items])
+
+
 

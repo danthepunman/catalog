@@ -26,9 +26,6 @@ def start_here():
     return
 
 
-
-
-
 @manager.command
 def database_setup():
     try:
